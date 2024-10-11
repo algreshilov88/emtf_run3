@@ -439,6 +439,44 @@ module sp
         .clk         (clk)
     );
 
+    
+    /*
+	serialized_matching_and_deltas ser_phmatch_and_deltas(
+        // Ph Matching inputs
+        .ph_num     (ph_num), 
+        .ph_q       (ph_q),
+        .ph         (phd), 
+        .vl         (vld), 
+        .th11       (th11d), 
+        .th         (thd),
+        .cpat       (cpatd),	   
+
+        // Config Inputs
+        .th_window           (th_window),
+        .th_window_z0        (th_window_z0),
+        .two_st_tight_timing (two_st_tight_timing),
+        
+        // Best Track Outputs
+        .bt_phi      (bt_phi),
+        .bt_theta    (bt_theta),
+        .bt_cpattern (bt_cpattern),
+        .bt_delta_ph (bt_delta_ph),
+        .bt_delta_th (bt_delta_th),
+        .bt_sign_ph  (bt_sign_ph),
+        .bt_sign_th  (bt_sign_th),
+        .bt_rank     (bt_rank_i),
+        .bt_vi       (bt_vi), 
+        .bt_hi       (bt_hi), 
+        .bt_ci       (bt_ci), 
+        .bt_si       (bt_si),
+        
+        // Clocks
+        .clk40(clk), 
+        .clk120(clk120)
+    );
+    */
+    
+
     // single hit trigger
     // take only chambers from this sector, not neighbor 
     single sngl

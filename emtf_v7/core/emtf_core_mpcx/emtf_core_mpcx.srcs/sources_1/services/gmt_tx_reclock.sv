@@ -3,6 +3,8 @@
 
 
 //***********************************Entity Declaration************************
+
+// Reworked gmt reclock module
 /*
 module gmt_tx_reclock
 (
@@ -173,6 +175,8 @@ module gmt_tx_reclock
 
 endmodule
 */
+
+
 
 
 module gmt_tx_reclock
@@ -349,4 +353,3 @@ module gmt_tx_reclock
 endmodule
 
 
-    
