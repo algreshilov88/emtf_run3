@@ -40,7 +40,7 @@ module extender (inp, outp, drifttime, clk);
     // output logic combinatorial, to reduce latency
     always @(*)
     begin
-        // outp = inp | d1 | d2;
-        outp = d1 | d2;
+        // outp = inp | d1; // 1 cycle sooner - use w/ folded pattern matching
+        outp = d1 | d2; // standard
     end
 endmodule

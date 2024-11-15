@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-  module emtfnn_wrapper_mul_mul_16ns_18s_34_1_1_DSP48_24(a, b, p);
+  module emtfnn_wrapper_mul_mul_16ns_18s_34_1_1_DSP48_28(a, b, p);
 input [16 - 1 : 0] a;
 input signed [18 - 1 : 0] b;
 output signed [34 - 1 : 0] p;
@@ -26,7 +26,7 @@ output[dout_WIDTH - 1:0] dout;
 
 
 
-emtfnn_wrapper_mul_mul_16ns_18s_34_1_1_DSP48_24 emtfnn_wrapper_mul_mul_16ns_18s_34_1_1_DSP48_24_U(
+emtfnn_wrapper_mul_mul_16ns_18s_34_1_1_DSP48_28 emtfnn_wrapper_mul_mul_16ns_18s_34_1_1_DSP48_28_U(
     .a( din0 ),
     .b( din1 ),
     .p( dout ));

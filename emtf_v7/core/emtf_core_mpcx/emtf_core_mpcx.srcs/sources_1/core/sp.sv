@@ -81,6 +81,7 @@ module sp
     // clock
     input 				clk,
     input               clk120,
+    input               clk160,
 	input 				control_clk,
 	
 	input endcap,
@@ -311,6 +312,21 @@ module sp
         .qcode     (ph_rank),
         .clk       (clk)
 	);
+
+	
+	// detect ph patterns in all zones - folded version
+	// note- if you use folded version, you have to change extender to output 1 clock earlier
+	/*
+    ph_pattern_sector_folded phps //phps_folded
+	(
+        .st        (ph_ext),
+        .qcode     (ph_rank),
+        .clk       (clk),
+        .clk160    (clk160)
+	);
+	*/
+
+	
 	
     // find 3 best ph patterns in each zone
     sort_sector srts
@@ -353,6 +369,7 @@ module sp
 
 	// match ph patterns to segments
 	// reroute segments according to ph zones
+	/*
 	match_ph_segments mphseg
     (
         .ph_num     (ph_num), 
@@ -438,9 +455,10 @@ module sp
         
         .clk         (clk)
     );
+    */
 
     
-    /*
+
 	serialized_matching_and_deltas ser_phmatch_and_deltas(
         // Ph Matching inputs
         .ph_num     (ph_num), 
@@ -474,7 +492,7 @@ module sp
         .clk40(clk), 
         .clk120(clk120)
     );
-    */
+
     
 
     // single hit trigger

@@ -79,6 +79,7 @@ module emtf_core_top
 
     mgt_rx ge11_rx [6:0]();
     mgt_rx cppf_rx [6:0]();
+    mgt_rx irpc_rx [0:0]();
     mgt_rx mpc_rx  [4:0][7:0]();
     mgt_rx mpcn_rx [8:0]();
     mgt_tx gmt_tx [1:0]();
@@ -104,6 +105,7 @@ module emtf_core_top
         .mpc2_rx  (mpc_rx[2] ),
         .mpc4_rx  (mpc_rx[4] ),
         .cppf_rx  (cppf_rx ),
+        .irpc_rx  (irpc_rx ),
         .mpc3_rx  (mpc_rx[3] ),
         .mpc1_rx  (mpc_rx[1] ),
         .mpc0_rx  (mpc_rx[0] ),
@@ -873,6 +875,7 @@ module emtf_core_top
         
 		.clk         (clk40),
 		.clk120      (clk120),
+		.clk160      (clk_160),
 		.control_clk (pcie_clk_buf),
 		
 		.endcap (endcap),
@@ -1213,6 +1216,27 @@ module emtf_core_top
     wire resync_and_empty;
     wire clk_80;
 
+
+    // *******  Overwrite lct_aligned for ME13 neighbor. Dumbest way possible for now *******************
+    /*
+    csc_lct_mpcx lct_aligned_overwrite  [5:0][9:1][1:0]; // [station][CSCID][stub]
+    logic [31:0] irpc_rxdata [1:0]; // get this from irpc link
+    
+    always @(*) begin
+        for(int st=0; st<=5; st++) begin
+            for(int ch=1; ch<=9; ch++) begin
+                for(int iseg=0; iseg<=1; iseg++) begin
+                    if( (st != 5) || (ch != 3) )
+                        lct_aligned_overwrite[st][ch][iseg] = lct_aligned[st][ch][iseg];
+                    else
+                        lct_aligned_overwrite[st][ch][iseg] = irpc_rxdata[iseg];
+                end
+            end // ch
+        end // st
+    end // always @(*)
+    */
+    
+    
     mtf7_daq daq
     (
         // CSC data

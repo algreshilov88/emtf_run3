@@ -75,18 +75,33 @@ module tb_sp();
     */
 
 
-    wire clk40, clk120;
+    wire clk40, clk120, clk160;
+    wire mmcm_locked;
+    reg mmcm_reset = 1'b0;
+    
+    /* // Not using for sim since it adds jitter to fractional divided output (clk160)
     usrclk_mmcm usrclk_mmcm_
 	(
         .CLK_IN1  (clki),
-        .CLK_OUT1 (),
+        .CLK_OUT1 (clk160),
         .CLK_OUT2 (clk40),
         .CLK_OUT3 (clk120),
-        .CLK_OUT4 (),
-        .CLK_OUT5 (),
+        //.CLK_OUT4 (),
+        //.CLK_OUT5 (),
         .RESET    (1'b0),
-        .LOCKED   ()
-     );  
+        .LOCKED   (mmcm_locked)
+     ); 
+     */ 
+      
+    clk_wiz_0 i_clk_wiz_0
+    (
+        .clk_in1  (clki),
+        .clk_out1 (clk160),
+        .clk_out2 (clk40),
+        .clk_out3 (clk120),
+        .reset    (1'b0),
+        .locked   (mmcm_locked)
+    ); 
 
 
    genvar 			 gi, gj, gk;
@@ -369,6 +384,7 @@ module tb_sp();
 		 .clk      (clk40),
 		 .control_clk(clki), // use main clock for control as well
 		 .clk120   (clk120),
+		 .clk160   (clk160),
 		 .endcap (endcap),
 		 .sector (sector),
 		 .lat_test (lat_test),
@@ -686,11 +702,13 @@ module tb_sp();
             // give MMCM time to start, around 4.6 uS 
 			for (i = 0; i < 250; i = i+1)
 			begin
-				for (j = 0; j < 2; j = j+1)
-				begin
-					`clk_drive(clki, j);
-					`__top_module__
-						end
+			    if( i == 10)
+			         mmcm_reset = 1'b1;
+			    else 
+			         mmcm_reset = 1'b0;
+			         
+			    #12.5 clki = 1'b1;
+			    #12.5 clki = 1'b0;
             end
 			
 			for (i = 0; i < 200 + max_ev-1; i = i+1)
@@ -803,10 +821,9 @@ module tb_sp();
 				//else lat_test = 1'b0;
 				
 				// Run the Clock
-                clki = 1'b0;
-                #10
-                clki = 1'b1;
-                #10 
+                
+                #12.5 clki = 1'b1;
+                #12.5 clki = 1'b0;
 				
 
 				// Read info from inside sp
@@ -915,6 +932,15 @@ module tb_sp();
 					end // for (iz = 0; iz < 4; iz = iz+1)
 
 
+					for (iz = 0; iz < 4; iz = iz+1) // zone loop
+					begin
+						for (ir = 1; ir <= 4; ir = ir+1) // station loop
+						  begin
+						      if (uut.ph_ext[iz][ir] > 0)
+							     $fwrite(sim_out, "Ph Extended: zone: %d st: %d Val: %h\n", iz, ir, uut.ph_ext[iz][ir]);
+						  end 
+                    end 
+                    
 					for (iz = 0; iz < 4; iz = iz+1) // zone loop
 					begin
 						for (ir = 0; ir < ph_raw_w; ir = ir+1) // key strip loop
