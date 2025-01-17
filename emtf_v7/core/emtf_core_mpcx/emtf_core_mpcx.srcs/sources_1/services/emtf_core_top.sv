@@ -653,6 +653,27 @@ module emtf_core_top
         .ttc_bc0_delay_cppf (ttc_bc0_delay_cppf),
         .fiber_enable (fiber_enable[49 +: 7])
     );
+    
+    
+    //////// iRPC Link Handling ///////////
+    csc_lct_mpcx irpc_lcts[1:0];
+    wire [7:0] irpc_link_id;
+    wire irpc_crc_match;
+    wire irpc_link_aligned;
+    wire irpc_fiber_enable;
+    
+    irpc_link i_irpc_link(
+        .irpc_rx(irpc_rx), // irpc data from MGT Builder
+        .irpc_lcts(irpc_lcts), // main output - Data packed into "2 LCT segs"
+        .link_id(irpc_link_id),
+        .crc_match(irpc_crc_match),
+        .link_aligned(irpc_link_aligned),
+        .clk_40(clk40), // LHC clk
+        .ttc_bc0_del(ttc_bc0_del), // Pulse at CSC delay - need to be aligned with this
+        .fiber_enable(irpc_fiber_enable)
+    );
+    
+    
 
     wire [233:0]      ge11_rxd [6:0]; ///< GEM rx data, 1 frame x 234 bits, for 7 links
     wire [6:0]        ge11_rx_valid;  ///< GEM data valid flags
@@ -996,6 +1017,8 @@ module emtf_core_top
     wire [31 : 0 ] jtag_tms_vector ;
     wire [31 : 0 ] jtag_tdi_vector ;
     wire [31 : 0 ] jtag_tdo_vector ;
+    
+    wire irpc_me13_replacement;
 
 	register_bank crb
 	(
@@ -1091,7 +1114,13 @@ module emtf_core_top
         .bc0_period_err_gem  (bc0_period_err_gem ),
         .hmt_rate            (hmt_rate),
         .hmt_rate_limit  (hmt_rate_limit),
-        .hmt_rate_err    (hmt_rate_err) // [station][chamber] hmt rate exceeded hmt_rate_limit
+        .hmt_rate_err    (hmt_rate_err), // [station][chamber] hmt rate exceeded hmt_rate_limit
+        
+        .irpc_link_id(irpc_link_id),
+        .irpc_crc_match(irpc_crc_match),
+        .irpc_aligned(irpc_link_aligned),
+        .irpc_me13_replacement(irpc_me13_replacement),
+        .irpc_fiber_enbale(irpc_fiber_enable)
     );
 
 	wire [8*5+9-1:0] bc0_mrg;
@@ -1217,10 +1246,8 @@ module emtf_core_top
     wire clk_80;
 
 
-    // *******  Overwrite lct_aligned for ME13 neighbor. Dumbest way possible for now *******************
-    /*
+    // *******  Overwrite ME13 neighbor with iRPC for DAQ. *******************
     csc_lct_mpcx lct_aligned_overwrite  [5:0][9:1][1:0]; // [station][CSCID][stub]
-    logic [31:0] irpc_rxdata [1:0]; // get this from irpc link
     
     always @(*) begin
         for(int st=0; st<=5; st++) begin
@@ -1228,19 +1255,22 @@ module emtf_core_top
                 for(int iseg=0; iseg<=1; iseg++) begin
                     if( (st != 5) || (ch != 3) )
                         lct_aligned_overwrite[st][ch][iseg] = lct_aligned[st][ch][iseg];
-                    else
-                        lct_aligned_overwrite[st][ch][iseg] = irpc_rxdata[iseg];
+                    else begin
+                        if(irpc_me13_replacement)
+                            lct_aligned_overwrite[st][ch][iseg] = irpc_lcts[iseg];
+                        else
+                            lct_aligned_overwrite[st][ch][iseg] = lct_aligned[st][ch][iseg];
+                    end
                 end
             end // ch
         end // st
     end // always @(*)
-    */
     
     
     mtf7_daq daq
     (
         // CSC data
-		 .lct_i    (lct_aligned), //(core_input_lct),
+		 .lct_i    (lct_aligned_overwrite), //(core_input_lct),
 		 .bc0_err_period (alignment_error), // send alignment error to DAQ as link error
 		 .bc0_err_period_id1 (5'h0),
 		 // RPC data from CPPF

@@ -107,7 +107,15 @@ module register_bank
     input  [1:0] bc0_period_err_gem [6:0],
     input [25:0] hmt_rate [2:0],
     output reg [25:0] hmt_rate_limit,
-    input [8:0] hmt_rate_err [5:0] // [station][chamber] hmt rate exceeded hmt_rate_limit
+    input [8:0] hmt_rate_err [5:0], // [station][chamber] hmt rate exceeded hmt_rate_limit
+    
+    
+    // iRPC Info
+    input [7:0] irpc_link_id,
+    input irpc_crc_match,
+    input irpc_aligned,
+    output reg irpc_me13_replacement,
+    output reg irpc_fiber_enbale
     
 );
 
@@ -277,6 +285,10 @@ module register_bank
 		gem_data_del_comb[0] = {7{5'h1}};
 		gem_data_del_comb[1] = {7{5'h1}};
 		hmt_rate_limit = 26'd100; // default hmt rate limit
+		
+		irpc_me13_replacement = 1'b0;
+        irpc_fiber_enbale = 1'b0;
+    
 	end
 
 	wire [8:0] reg_addr = {sel, addr}; // combined address
@@ -407,6 +419,10 @@ module register_bank
 				9'h073: begin gem_data_del_comb[1] = r_in; end
 				9'h076: begin {en_manual_gem, ttc_bc0_delay_gem} = r_in; end
 				9'h079: begin hmt_rate_limit = r_in; end
+				
+				9'h080: begin irpc_me13_replacement = r_in; end 
+				9'h081: begin irpc_fiber_enbale = r_in; end
+				
 			endcase
 		end
 		else
@@ -725,6 +741,10 @@ module register_bank
 				9'h078: begin r_out = r_out | hmt_rate[0]; end // {loose}
 				9'h079: begin r_out = r_out | hmt_rate_limit; end
 				9'h07a: begin r_out = r_out | hmt_rate_err_w; end
+				
+				9'h080: begin r_out = r_out | irpc_me13_replacement; end 
+				9'h081: begin r_out = r_out | irpc_fiber_enbale; end
+				9'h082: begin r_out = r_out | {irpc_aligned, irpc_crc_match, irpc_link_id}; end
 				
 			endcase
 			in_delay_tap_rb_r = in_delay_tap_rb;
